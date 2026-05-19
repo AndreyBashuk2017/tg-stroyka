@@ -178,9 +178,9 @@ Telegram Mini App для строительной компании (Калужс
        │
        ├── Расчёт: client-side JS (prices.config.ts)
        │
-       └── Отправка лида: POST /api/lead
+       └── Отправка лида: POST /.netlify/functions/lead
                 ↓
-       [Vercel Serverless Function]
+       [Netlify Function]
                 ↓
        [Telegram Bot API → sendMessage]
                 ↓
@@ -220,18 +220,18 @@ document.documentElement.style.setProperty(
 )
 ```
 
-### Backend (Vercel Serverless)
+### Backend (Netlify Functions)
 
-Файл: `api/lead.ts`
+Файл: `netlify/functions/lead.ts`
 
 ```typescript
-// POST /api/lead
+// POST /.netlify/functions/lead
 // Body: { name, phone, calcData, total }
 // Env vars: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 // → Telegram Bot API sendMessage
 ```
 
-**Важно:** bot token — только в `process.env` на Vercel, никогда во frontend-коде.
+**Важно:** bot token — только в `process.env` на Netlify, никогда во frontend-коде.
 
 ### Конфиг цен
 
@@ -297,11 +297,29 @@ export const PRICES = {
 
 | Параметр | Решение |
 |---|---|
-| Платформа | Vercel (free tier) |
-| Домен | `<project>.vercel.app` (HTTPS автоматически) |
+| Платформа | Netlify (free tier) |
+| Домен | `<project>.netlify.app` (HTTPS автоматически) |
 | Деплой | `git push` → автодеплой |
-| Обновление цен | Edit `prices.config.ts` → commit → push → Vercel деплоит |
-| Env vars | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` — в Vercel Dashboard |
+| Build command | `npm run build` |
+| Publish dir | `dist` |
+| Обновление цен | Edit `prices.config.ts` → commit → push → Netlify деплоит |
+| Env vars | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` — в Netlify Dashboard → Site configuration → Environment variables |
+
+Конфиг `netlify.toml` в корне проекта:
+
+```toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
 
 ---
 
@@ -309,8 +327,10 @@ export const PRICES = {
 
 ```
 tg-stroyka/
-├── api/
-│   └── lead.ts                 # Vercel serverless — отправка лида
+├── netlify/
+│   └── functions/
+│       └── lead.ts             # Netlify Function — отправка лида в Telegram
+├── netlify.toml                # Конфиг сборки и редиректов
 ├── src/
 │   ├── config/
 │   │   └── prices.config.ts    # Все цены — редактировать здесь
