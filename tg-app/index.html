@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, minimum-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#2AABEE">
+  <title>Калькулятор строительства</title>
+
+  <!-- Telegram WebApp SDK — загружать до всего остального -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Шрифт — preconnect для скорости -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ==========================================
+       ЭКРАН 0 — СТАРТ
+       ========================================== -->
+  <div class="screen active" id="screen-0">
+    <div class="start-screen">
+      <div class="start-hero">
+
+        <!-- Иконка компании -->
+        <div class="start-icon-wrap">
+          <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 18L19 6L33 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 16V31C8 31.55 8.45 32 9 32H15V24H23V32H29C29.55 32 30 31.55 30 31V16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 32V26H23V32" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <h1 class="start-company">СтройДом</h1>
+        <p class="start-region">Дома из газобетона · МО и Калужская обл.</p>
+
+        <!-- CSS иллюстрация дома -->
+        <div class="house-art" aria-hidden="true">
+          <div class="house-art__chimney"></div>
+          <div class="house-art__roof"></div>
+          <div class="house-art__body">
+            <div class="house-art__win house-art__win--left"></div>
+            <div class="house-art__win house-art__win--right"></div>
+            <div class="house-art__door"></div>
+          </div>
+        </div>
+
+        <!-- Триггеры доверия -->
+        <ul class="trust-list">
+          <li class="trust-item">
+            <span class="trust-check">✓</span>
+            <span>40 домов построено — смотрите портфолио</span>
+          </li>
+          <li class="trust-item">
+            <span class="trust-check">✓</span>
+            <span>Цена из расчёта фиксируется в договоре</span>
+          </li>
+          <li class="trust-item">
+            <span class="trust-check">✓</span>
+            <span>Результат сразу — без звонков и «перезвоним»</span>
+          </li>
+        </ul>
+
+        <p class="start-tagline">Узнайте стоимость вашего дома за 2 минуты</p>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================
+       ЭКРАН 1 — ПЛОЩАДЬ И ЭТАЖНОСТЬ
+       ========================================== -->
+  <div class="screen" id="screen-1">
+    <div class="step-screen">
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progress-1" style="width:16.7%"></div></div>
+        <span class="progress-label">Шаг 1 из 6</span>
+      </div>
+
+      <div class="step-body">
+        <h2 class="step-title">Какой дом<br>вы планируете?</h2>
+
+        <!-- Площадь -->
+        <div class="area-section">
+          <span class="section-label">Площадь дома</span>
+          <div class="area-number" id="area-display">120 <span>м²</span></div>
+          <div class="area-slider-wrap">
+            <input type="range" id="area-slider" min="60" max="300" step="10" value="120" style="--fill:25%">
+          </div>
+          <div class="area-chips">
+            <button class="area-chip" data-value="80">80</button>
+            <button class="area-chip" data-value="100">100</button>
+            <button class="area-chip active" data-value="120">120</button>
+            <button class="area-chip" data-value="150">150</button>
+          </div>
+          <p class="hint-text" style="margin-top:8px">120 м² — одноэтажный 10×12 или двухэтажный 8×8</p>
+        </div>
+
+        <!-- Этажность -->
+        <div>
+          <span class="section-label">Этажность</span>
+          <div class="cards-row" id="step1-floors">
+            <div class="select-card" data-value="single">
+              <div class="card-icon">🏠</div>
+              <div class="card-label">1 этаж</div>
+            </div>
+            <div class="select-card" data-value="mansard">
+              <div class="card-icon">🏡</div>
+              <div class="card-label">Мансарда</div>
+            </div>
+            <div class="select-card" data-value="double">
+              <div class="card-icon">🏢</div>
+              <div class="card-label">2 этажа</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================
+       ЭКРАН 2 — ФУНДАМЕНТ
+       ========================================== -->
+  <div class="screen" id="screen-2">
+    <div class="step-screen">
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:33.3%"></div></div>
+        <span class="progress-label">Шаг 2 из 6</span>
+      </div>
+
+      <div class="step-body">
+        <h2 class="step-title">Тип фундамента</h2>
+
+        <div class="cards-grid" id="step2-cards">
+
+          <div class="select-card" data-value="pile">
+            <div class="card-icon">🔩</div>
+            <div class="card-label">Свайный</div>
+            <div class="card-hint">Быстро, подходит для большинства участков</div>
+          </div>
+
+          <div class="select-card" data-value="strip">
+            <div class="card-icon">▭</div>
+            <div class="card-label">Ленточный</div>
+            <div class="card-hint">Классика, надёжно, хороший подвал</div>
+          </div>
+
+          <div class="select-card" data-value="slab">
+            <div class="card-icon">⬜</div>
+            <div class="card-label">Монолит</div>
+            <div class="card-hint">Максимальная надёжность на любом грунте</div>
+          </div>
+
+          <div class="select-card" data-value="ushp">
+            <div class="card-icon">🌡️</div>
+            <div class="card-label">УШП</div>
+            <div class="card-hint">Тёплые полы, энергоэффективность, премиум</div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================
+       ЭКРАН 3 — КРОВЛЯ
+       ========================================== -->
+  <div class="screen" id="screen-3">
+    <div class="step-screen">
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div>
+        <span class="progress-label">Шаг 3 из 6</span>
+      </div>
+
+      <div class="step-body">
+        <h2 class="step-title">Кровля</h2>
+
+        <!-- Материал -->
+        <div>
+          <span class="section-label">Материал</span>
+          <div class="cards-row" id="step3-material">
+
+            <div class="select-card" data-value="metalTile">
+              <div class="card-icon">🔷</div>
+              <div class="card-label">Металло&shy;черепица</div>
+              <div class="card-hint">Бюджетно, популярно</div>
+            </div>
+
+            <div class="select-card" data-value="softRoofing">
+              <div class="card-icon">🟫</div>
+              <div class="card-label">Мягкая черепица</div>
+              <div class="card-hint">Тихо, долговечно</div>
+              <div class="card-badge">+8%</div>
+            </div>
+
+            <div class="select-card" data-value="standingSeam">
+              <div class="card-icon">〰️</div>
+              <div class="card-label">Фальцевая</div>
+              <div class="card-hint">Премиум, долговечно</div>
+              <div class="card-badge">+15%</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Форма -->
+        <div>
+          <span class="section-label">Форма</span>
+          <div class="cards-row" id="step3-shape">
+
+            <div class="select-card" data-value="gable">
+              <div class="card-icon" style="font-size:20px; line-height:1.3">⛺</div>
+              <div class="card-label">Двускатная</div>
+            </div>
+
+            <div class="select-card" data-value="hip">
+              <div class="card-icon" style="font-size:20px; line-height:1.3">🏯</div>
+              <div class="card-label">4-скатная</div>
+              <div class="card-badge">+12%</div>
+            </div>
+
+            <div class="select-card" data-value="flat">
+              <div class="card-icon" style="font-size:20px; line-height:1.3">🟦</div>
+              <div class="card-label">Плоская</div>
+              <div class="card-badge">−5%</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Превью цены — появляется после выбора обоих параметров -->
+        <div class="price-preview" id="price-preview">
+          <span class="price-preview__label">Ориентировочно</span>
+          <span class="price-preview__amount" id="preview-amount">—</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================
+       ЭКРАН 4 — СТИЛЬ ДОМА
+       ========================================== -->
+  <div class="screen" id="screen-4">
+    <div class="step-screen">
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:66.7%"></div></div>
+        <span class="progress-label">Шаг 4 из 6</span>
+      </div>
+
+      <div class="step-body">
+        <h2 class="step-title">Стиль дома</h2>
+        <p class="hint-text">Влияет на фасад и стоимость</p>
+
+        <div class="cards-col" id="step4-cards">
+
+          <div class="style-card style-card--classic" data-value="classic">
+            <div class="style-card__bg"></div>
+            <!-- Силуэт классического дома -->
+            <svg class="style-card__silhouette" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M10 45L60 10L110 45" fill="white"/>
+              <rect x="15" y="45" width="90" height="40" fill="white"/>
+              <rect x="38" y="58" width="18" height="27" fill="rgba(0,0,0,0.2)"/>
+              <rect x="20" y="53" width="20" height="15" fill="rgba(0,0,0,0.15)"/>
+              <rect x="80" y="53" width="20" height="15" fill="rgba(0,0,0,0.15)"/>
+            </svg>
+            <div class="style-card__info">
+              <div class="style-card__label">🏡 Классика</div>
+              <div class="style-card__sub">Традиционный фасад, тёплая атмосфера</div>
+            </div>
+          </div>
+
+          <div class="style-card style-card--hitech" data-value="hitech">
+            <div class="style-card__bg"></div>
+            <svg class="style-card__silhouette" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="10" y="20" width="100" height="60" fill="white"/>
+              <rect x="10" y="10" width="50" height="15" fill="white"/>
+              <rect x="60" y="40" width="35" height="40" fill="rgba(0,0,0,0.15)"/>
+              <rect x="15" y="30" width="35" height="25" fill="rgba(0,0,0,0.15)"/>
+            </svg>
+            <div class="style-card__price-badge">+10%</div>
+            <div class="style-card__info">
+              <div class="style-card__label">⬛ Хай-тек</div>
+              <div class="style-card__sub">Панорамные окна, лаконичная геометрия</div>
+            </div>
+          </div>
+
+          <div class="style-card style-card--chalet" data-value="chalet">
+            <div class="style-card__bg"></div>
+            <svg class="style-card__silhouette" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M5 55L60 5L115 55" fill="white"/>
+              <rect x="20" y="55" width="80" height="30" fill="white"/>
+              <rect x="38" y="62" width="18" height="23" fill="rgba(0,0,0,0.2)"/>
+              <rect x="23" y="58" width="15" height="12" fill="rgba(0,0,0,0.15)"/>
+              <rect x="82" y="58" width="15" height="12" fill="rgba(0,0,0,0.15)"/>
+            </svg>
+            <div class="style-card__price-badge">+18%</div>
+            <div class="style-card__info">
+              <div class="style-card__label">🏔 Шале</div>
+              <div class="style-card__sub">Крутая кровля, балкон, деревянные акценты</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================
+       ЭКРАН 5 — ОТДЕЛКА
+       ========================================== -->
+  <div class="screen" id="screen-5">
+    <div class="step-screen">
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:83.3%"></div></div>
+        <span class="progress-label">Шаг 5 из 6</span>
+      </div>
+
+      <div class="step-body">
+        <h2 class="step-title">Что входит<br>в стоимость?</h2>
+
+        <div class="cards-col" id="step5-cards">
+
+          <div class="select-card select-card--row" data-value="shell">
+            <div class="card-icon">🏗</div>
+            <div class="card-text">
+              <div class="card-label">Коробка</div>
+              <div class="card-hint">Стены + кровля, без отделки внутри</div>
+            </div>
+          </div>
+
+          <div class="select-card select-card--row" data-value="rough">
+            <div class="card-icon">🔨</div>
+            <div class="card-text">
+              <div class="card-label">Черновая</div>
+              <div class="card-hint">+ стяжка, штукатурка, разводка коммуникаций</div>
+            </div>
+          </div>
+
+          <div class="select-card select-card--row" data-value="turnkeyEco">
+            <div class="card-icon">🏠</div>
+            <div class="card-text">
+              <div class="card-label">Под ключ Эконом</div>
+              <div class="card-hint">+ бюджетные финишные материалы</div>
+            </div>
+          </div>
+
+          <div class="select-card select-card--row" data-value="turnkeyStd">
+            <div class="card-icon">✨</div>
+            <div class="card-text">
+              <div class="card-label">Под ключ Стандарт</div>
+              <div class="card-hint">+ современные материалы, качество выше среднего</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================
+       ЭКРАН 6 — ДОПОЛНИТЕЛЬНЫЕ ОПЦИИ
+       ========================================== -->
+  <div class="screen" id="screen-6">
+    <div class="step-screen">
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+        <span class="progress-label">Шаг 6 из 6</span>
+      </div>
+
+      <div class="step-body">
+        <h2 class="step-title">Дополнительно</h2>
+        <p class="hint-text">Необязательно — можно пропустить</p>
+
+        <div style="display:flex; flex-direction:column; gap:10px">
+
+          <div class="option-card" data-value="terrace">
+            <div class="option-checkbox" id="check-terrace"></div>
+            <div class="option-icon">🌿</div>
+            <div class="option-text">
+              <div class="option-label">Терраса</div>
+              <div class="option-price">+ 200 000 ₽</div>
+            </div>
+          </div>
+
+          <div class="option-card" data-value="garage">
+            <div class="option-checkbox" id="check-garage"></div>
+            <div class="option-icon">🚗</div>
+            <div class="option-text">
+              <div class="option-label">Гараж на 1 авто</div>
+              <div class="option-price">+ 380 000 ₽</div>
+            </div>
+          </div>
+
+          <div class="option-card" data-value="bathhouse">
+            <div class="option-checkbox" id="check-bathhouse"></div>
+            <div class="option-icon">🛁</div>
+            <div class="option-text">
+              <div class="option-label">Баня / сауна</div>
+              <div class="option-price">+ 420 000 ₽</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="options-total-bar">
+          <span class="options-total-label">Итого</span>
+          <span class="options-total-amount" id="options-total">—</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================
+       ЭКРАН 7 — РЕЗУЛЬТАТ
+       ========================================== -->
+  <div class="screen" id="screen-7">
+    <div class="result-screen">
+
+      <!-- Резюме параметров -->
+      <div class="result-header">
+        <div class="result-header__title" id="result-title">🏠 Ваш дом</div>
+        <div class="result-header__sub" id="result-subtitle">Газобетон</div>
+      </div>
+
+      <!-- Разбивка по статьям -->
+      <div class="result-breakdown" id="result-breakdown">
+        <!-- Генерируется через JS в renderResult() -->
+      </div>
+
+      <!-- Итог -->
+      <div class="result-total-block">
+        <div class="result-total__label">ИТОГО</div>
+        <div class="result-total__amount" id="result-total">—</div>
+        <div class="result-total__meta">
+          <span id="result-per-sqm"></span>&nbsp;·&nbsp;точность ±10–15%
+        </div>
+      </div>
+
+      <!-- Ипотека -->
+      <div class="result-mortgage">
+        <div class="result-mortgage__icon">🏦</div>
+        <div class="result-mortgage__text">
+          <div class="result-mortgage__title">Семейная ипотека 6% · 20 лет</div>
+          <div class="result-mortgage__amount" id="result-mortgage">—</div>
+        </div>
+      </div>
+
+      <!-- Действия -->
+      <div class="result-actions">
+        <button class="result-btn result-btn--share" id="share-btn">
+          📤 Поделиться
+        </button>
+        <button class="result-btn result-btn--recalc" id="recalc-btn">
+          🔄 Пересчитать
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ==========================================
+       ЭКРАН 8 — ФОРМА КОНТАКТА
+       ========================================== -->
+  <div class="screen" id="screen-8">
+    <div class="contact-screen">
+
+      <!-- Итог расчёта -->
+      <div class="contact-summary">
+        <div class="contact-summary__title">Ваш расчёт готов</div>
+        <div class="contact-summary__amount" id="form-total">—</div>
+      </div>
+
+      <p class="contact-intro">
+        Оставьте контакт — наш менеджер уточнит детали
+        и пришлёт точную смету на ваш объект
+      </p>
+
+      <!-- Имя -->
+      <div class="form-field">
+        <label class="form-label" for="contact-name">Ваше имя</label>
+        <input
+          type="text"
+          id="contact-name"
+          class="form-input"
+          placeholder="Алексей"
+          autocomplete="given-name"
+          inputmode="text"
+        >
+      </div>
+
+      <!-- Телефон -->
+      <div class="form-field">
+        <label class="form-label" for="contact-phone">Телефон</label>
+        <input
+          type="tel"
+          id="contact-phone"
+          class="form-input"
+          placeholder="+7 (___) ___-__-__"
+          inputmode="tel"
+        >
+      </div>
+
+      <!-- Согласие 152-ФЗ -->
+      <label class="consent-row" id="consent-label">
+        <input type="checkbox" id="contact-consent">
+        <div class="consent-box" id="consent-box"></div>
+        <span class="consent-text">
+          Согласен на обработку персональных данных
+          в соответствии с&nbsp;152-ФЗ
+        </span>
+      </label>
+
+      <div class="form-error" id="form-error"></div>
+
+    </div>
+  </div>
+
+
+  <!-- ==========================================
+       ЭКРАН 9 — СПАСИБО
+       ========================================== -->
+  <div class="screen" id="screen-9">
+    <div class="thanks-screen">
+
+      <div class="thanks-icon">
+        <span class="thanks-check">✅</span>
+      </div>
+
+      <h2 class="thanks-title">Заявка отправлена!</h2>
+
+      <p class="thanks-text">
+        <span class="thanks-name">Алексей</span> позвонит вам
+        сегодня до 19:00 и ответит на все вопросы
+      </p>
+
+      <p class="thanks-cta-hint">
+        Пока ждёте — посмотрите наши готовые объекты
+      </p>
+
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+
+<!-- Кнопка-заглушка для браузера (вместо Telegram MainButton) -->
+<button id="browser-main-btn">
+  <span id="browser-btn-text">✦ Начать расчёт</span>
+</button>
+
+
+<script src="js/prices.js"></script>
+<script src="js/calculator.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

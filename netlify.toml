@@ -1,0 +1,15 @@
+# netlify.toml — Конфиг деплоя для Netlify
+# Статический HTML-сайт, без сборки
+
+[build]
+  publish   = "tg-app"   # папка со статическими файлами
+  functions = "netlify/functions"  # папка с серверными функциями
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA-редирект: все 404 → index.html (не трогает /.netlify/*)
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
