@@ -4,7 +4,9 @@
 // =====================================
 // Telegram WebApp
 // =====================================
-const tgApp = window.Telegram && window.Telegram.WebApp;
+// initData пустая строка — значит открыто в браузере, не в Telegram
+const _tgWA = window.Telegram && window.Telegram.WebApp;
+const tgApp = (_tgWA && _tgWA.initData !== '') ? _tgWA : null;
 
 // =====================================
 // Состояние приложения
@@ -62,6 +64,8 @@ function initTelegramApp() {
     const btn = document.getElementById('browser-main-btn');
     btn.style.display = 'flex';
     btn.addEventListener('click', handleMainButton);
+    // Отступ снизу чтобы контент не перекрывался кнопкой
+    document.getElementById('app').style.paddingBottom = '54px';
   }
 }
 
