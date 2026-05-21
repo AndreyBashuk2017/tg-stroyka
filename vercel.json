@@ -1,3 +1,9 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "builds": [
+    { "src": "tg-app/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/(css|js)/(.*)", "dest": "/tg-app/$1/$2" },
+    { "src": "/(.*)", "dest": "/tg-app/index.html" }
+  ]
 }
