@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyTelegramTheme();
   setupAllListeners();
   updateSliderFill(120);
+  initOffer();
 });
 
 function initTelegramApp() {
@@ -731,4 +732,41 @@ function setupAllListeners() {
       navigateTo(1, 'forward');
     });
   }
+}
+
+// =====================================
+// ОФФЕР — показывается один раз
+// =====================================
+function initOffer() {
+  const overlay = document.getElementById('offer-overlay');
+  if (!overlay) return;
+
+  // Если уже видел — не показываем
+  if (localStorage.getItem('offer_shown')) {
+    overlay.classList.add('hidden');
+    return;
+  }
+
+  // Небольшая задержка чтобы приложение успело отрисоваться
+  setTimeout(() => {
+    overlay.classList.remove('hidden');
+  }, 600);
+
+  function closeOffer() {
+    localStorage.setItem('offer_shown', '1');
+    overlay.style.transition = 'opacity 0.22s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.classList.add('hidden'), 220);
+  }
+
+  // Кнопка «Пропустить»
+  document.getElementById('offer-skip').addEventListener('click', closeOffer);
+
+  // Кнопка CTA — закрываем после перехода по ссылке
+  document.getElementById('offer-cta').addEventListener('click', closeOffer);
+
+  // Тап по фону (вне карточки) — закрываем
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeOffer();
+  });
 }

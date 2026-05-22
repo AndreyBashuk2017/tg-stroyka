@@ -1235,3 +1235,130 @@ input#contact-consent {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ========================================
+   ОФФЕР-МОДАЛКА
+   ======================================== */
+@keyframes offer-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes offer-card-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.offer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: rgba(0, 0, 0, 0.52);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: offer-backdrop-in 0.28s ease;
+}
+
+.offer-overlay.hidden {
+  display: none;
+}
+
+.offer-card {
+  background: var(--tg-bg);
+  border-radius: 20px;
+  padding: 28px 24px 24px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22);
+  animation: offer-card-in 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.offer-emoji {
+  font-size: 52px;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.offer-title {
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--tg-text);
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+
+.offer-sub {
+  font-size: 14px;
+  color: var(--tg-hint);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.offer-bullets {
+  list-style: none;
+  text-align: left;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.offer-bullets li {
+  font-size: 14px;
+  color: var(--tg-text);
+  padding-left: 20px;
+  position: relative;
+  line-height: 1.4;
+}
+
+.offer-bullets li::before {
+  content: '•';
+  position: absolute;
+  left: 4px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.offer-btn {
+  display: block;
+  width: 100%;
+  min-height: 50px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 14px;
+  text-decoration: none;
+  line-height: 50px;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  letter-spacing: 0.1px;
+}
+
+.offer-btn:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}
+
+.offer-skip {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px;
+  font-size: 14px;
+  color: var(--tg-hint);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: color 0.18s ease;
+}
+
+.offer-skip:active {
+  color: var(--tg-text);
+}

@@ -568,6 +568,30 @@
 </div><!-- #app -->
 
 
+<!-- ==========================================
+     ОФФЕР — показывается один раз при первом открытии
+     ========================================== -->
+<div id="offer-overlay" class="offer-overlay" aria-modal="true" role="dialog">
+  <div class="offer-card">
+    <div class="offer-emoji">🎁</div>
+    <h2 class="offer-title">Скидка 15% на геодезию участка</h2>
+    <p class="offer-sub">Подпишитесь на бота — получите промокод в личное сообщение</p>
+    <ul class="offer-bullets">
+      <li>Полезная информация из мира строительства</li>
+      <li>Эксклюзивные акции для подписчиков</li>
+    </ul>
+    <a
+      id="offer-cta"
+      class="offer-btn"
+      href="https://t.me/kalkulator_stroy_bot?start=from_app"
+      target="_blank"
+      rel="noopener"
+    >Получить скидку 15%</a>
+    <button id="offer-skip" class="offer-skip">Пропустить</button>
+  </div>
+</div>
+
+
 <!-- Кнопка-заглушка для браузера (вместо Telegram MainButton) -->
 <button id="browser-main-btn">
   <span id="browser-btn-text">✦ Начать расчёт</span>
