@@ -1231,6 +1231,14 @@ input#contact-consent {
   border-radius: var(--card-radius-sm);
 }
 
+.start-greeting {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 4px;
+  min-height: 20px;
+}
+
 @keyframes skeleton-shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }

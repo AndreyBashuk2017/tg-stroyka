@@ -43,6 +43,7 @@ const BTN_TEXTS = {
 document.addEventListener('DOMContentLoaded', () => {
   initTelegramApp();
   applyTelegramTheme();
+  applyGreeting();
   setupAllListeners();
   updateSliderFill(120);
   initOffer();
@@ -68,6 +69,15 @@ function initTelegramApp() {
     // Отступ снизу чтобы контент не перекрывался кнопкой
     document.getElementById('app').style.paddingBottom = '54px';
   }
+}
+
+function applyGreeting() {
+  const el = document.getElementById('start-greeting');
+  if (!el) return;
+  const name = tgApp && tgApp.initDataUnsafe && tgApp.initDataUnsafe.user
+    ? tgApp.initDataUnsafe.user.first_name
+    : null;
+  if (name) el.textContent = 'Привет, ' + name + ' 👋';
 }
 
 function applyTelegramTheme() {
@@ -622,18 +632,18 @@ function showFormError(msg) {
 // =====================================
 function shareResult() {
   const result = calculate(appState);
-  if (!result || !tgApp) return;
+  const botUrl = 'https://t.me/Kalkulator_stroy_bot/app';
+  const text = result
+    ? `🏠 Посчитал дом из газобетона ${appState.area} м² — вышло ≈ ${formatPrice(result.total)}. Рассчитай свой за 2 минуты:`
+    : '🏠 Рассчитай стоимость своего дома из газобетона за 2 минуты:';
 
-  const text =
-    `🏠 Посчитал дом из газобетона ${appState.area} м²\n` +
-    `💰 Стоимость: ≈ ${formatPrice(result.total)}\n\n` +
-    `Рассчитай свой дом за 2 минуты 👇`;
-
-  // Telegram Share API (если поддерживается)
-  if (tgApp.shareToStory) {
-    tgApp.shareToStory(text);
+  if (tgApp) {
+    tgApp.openTelegramLink(
+      'https://t.me/share/url?url=' + encodeURIComponent(botUrl) +
+      '&text=' + encodeURIComponent(text)
+    );
   } else if (navigator.share) {
-    navigator.share({ text });
+    navigator.share({ url: botUrl, text });
   }
 }
 
