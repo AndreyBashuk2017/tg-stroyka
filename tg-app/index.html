@@ -77,14 +77,71 @@
 
 
   <!-- ==========================================
+       ЭКРАН РЕГИОН
+       ========================================== -->
+  <div class="screen" id="screen-region">
+    <div class="step-screen">
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:14.3%"></div></div>
+        <span class="progress-label">Шаг 1 из 7</span>
+      </div>
+
+      <div class="step-body">
+        <h2 class="step-title">Где будем<br>строить?</h2>
+        <p class="hint-text">Цена зависит от региона</p>
+
+        <div class="cards-col" id="step-region-cards">
+
+          <div class="select-card select-card--row" data-value="kaluga">
+            <div class="card-icon">🏙</div>
+            <div class="card-text">
+              <div class="card-label">Калужская область</div>
+              <div class="card-hint">Калуга, районы области</div>
+            </div>
+          </div>
+
+          <div class="select-card select-card--row" data-value="obninsk">
+            <div class="card-icon">🔬</div>
+            <div class="card-text">
+              <div class="card-label">Обнинск</div>
+              <div class="card-hint">г. Обнинск и ближайшие районы</div>
+            </div>
+          </div>
+
+          <div class="select-card select-card--row" data-value="moscow_obl">
+            <div class="card-icon">🌆</div>
+            <div class="card-text">
+              <div class="card-label">Московская область</div>
+              <div class="card-hint">+15% к стоимости</div>
+            </div>
+            <div class="card-badge">+15%</div>
+          </div>
+
+          <div class="select-card select-card--row" data-value="new_moscow">
+            <div class="card-icon">🏛</div>
+            <div class="card-text">
+              <div class="card-label">Новая Москва</div>
+              <div class="card-hint">ТиНАО, +15% к стоимости</div>
+            </div>
+            <div class="card-badge">+15%</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================
        ЭКРАН 1 — ПЛОЩАДЬ И ЭТАЖНОСТЬ
        ========================================== -->
   <div class="screen" id="screen-1">
     <div class="step-screen">
 
       <div class="progress-wrap">
-        <div class="progress-bar"><div class="progress-fill" id="progress-1" style="width:16.7%"></div></div>
-        <span class="progress-label">Шаг 1 из 6</span>
+        <div class="progress-bar"><div class="progress-fill" style="width:28.6%"></div></div>
+        <span class="progress-label">Шаг 2 из 7</span>
       </div>
 
       <div class="step-body">
@@ -137,8 +194,8 @@
     <div class="step-screen">
 
       <div class="progress-wrap">
-        <div class="progress-bar"><div class="progress-fill" style="width:33.3%"></div></div>
-        <span class="progress-label">Шаг 2 из 6</span>
+        <div class="progress-bar"><div class="progress-fill" style="width:42.9%"></div></div>
+        <span class="progress-label">Шаг 3 из 7</span>
       </div>
 
       <div class="step-body">
@@ -184,8 +241,8 @@
     <div class="step-screen">
 
       <div class="progress-wrap">
-        <div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div>
-        <span class="progress-label">Шаг 3 из 6</span>
+        <div class="progress-bar"><div class="progress-fill" style="width:57.1%"></div></div>
+        <span class="progress-label">Шаг 4 из 7</span>
       </div>
 
       <div class="step-body">
@@ -262,8 +319,8 @@
     <div class="step-screen">
 
       <div class="progress-wrap">
-        <div class="progress-bar"><div class="progress-fill" style="width:66.7%"></div></div>
-        <span class="progress-label">Шаг 4 из 6</span>
+        <div class="progress-bar"><div class="progress-fill" style="width:71.4%"></div></div>
+        <span class="progress-label">Шаг 5 из 7</span>
       </div>
 
       <div class="step-body">
@@ -327,14 +384,72 @@
 
 
   <!-- ==========================================
+       ЭКРАН ФАСАД
+       ========================================== -->
+  <div class="screen" id="screen-facade">
+    <div class="step-screen">
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:85.7%"></div></div>
+        <span class="progress-label">Шаг 6 из 7</span>
+      </div>
+
+      <div class="step-body">
+        <h2 class="step-title">Фасад дома</h2>
+        <p class="hint-text">Защищает газобетон от влаги и придаёт облик</p>
+
+        <div class="cards-col" id="step-facade-cards">
+
+          <div class="select-card select-card--row" data-value="plaster">
+            <div class="card-icon">🪣</div>
+            <div class="card-text">
+              <div class="card-label">Штукатурка</div>
+              <div class="card-hint">Классика, обновление раз в 5–7 лет</div>
+            </div>
+            <div class="card-price">+ 3 500 ₽/м²</div>
+          </div>
+
+          <div class="select-card select-card--row" data-value="brick">
+            <div class="card-icon">🧱</div>
+            <div class="card-text">
+              <div class="card-label">Облицовочный кирпич</div>
+              <div class="card-hint">Долговечно, не требует ухода</div>
+            </div>
+            <div class="card-price">+ 8 000 ₽/м²</div>
+          </div>
+
+          <div class="select-card select-card--row" data-value="panel">
+            <div class="card-icon">🔲</div>
+            <div class="card-text">
+              <div class="card-label">Фасадная панель</div>
+              <div class="card-hint">Быстро, современно, без покраски</div>
+            </div>
+            <div class="card-price">+ 5 500 ₽/м²</div>
+          </div>
+
+          <div class="select-card select-card--row" data-value="none">
+            <div class="card-icon">⬜</div>
+            <div class="card-text">
+              <div class="card-label">Без фасада (пока)</div>
+              <div class="card-hint">Сделаем позже — нужна защита до зимы</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================
        ЭКРАН 5 — ОТДЕЛКА
        ========================================== -->
   <div class="screen" id="screen-5">
     <div class="step-screen">
 
       <div class="progress-wrap">
-        <div class="progress-bar"><div class="progress-fill" style="width:83.3%"></div></div>
-        <span class="progress-label">Шаг 5 из 6</span>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+        <span class="progress-label">Шаг 7 из 7</span>
       </div>
 
       <div class="step-body">
@@ -355,6 +470,14 @@
             <div class="card-text">
               <div class="card-label">Черновая</div>
               <div class="card-hint">+ стяжка, штукатурка, разводка коммуникаций</div>
+            </div>
+          </div>
+
+          <div class="select-card select-card--row" data-value="whitebox">
+            <div class="card-icon">⬜</div>
+            <div class="card-text">
+              <div class="card-label">Вайт бокс</div>
+              <div class="card-hint">+ чистовая стяжка, ошпаклёванные стены, разводка</div>
             </div>
           </div>
 
@@ -389,7 +512,7 @@
 
       <div class="progress-wrap">
         <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
-        <span class="progress-label">Шаг 6 из 6</span>
+        <span class="progress-label">Последний шаг</span>
       </div>
 
       <div class="step-body">
@@ -560,6 +683,15 @@
         <span class="thanks-name">Алексей</span> позвонит вам
         сегодня до 19:00 и ответит на все вопросы
       </p>
+
+      <a
+        id="pdf-download-btn"
+        class="pdf-download-btn"
+        href="#"
+        target="_blank"
+        rel="noopener"
+        style="display:none"
+      >📄 Скачать смету PDF</a>
 
       <p class="thanks-cta-hint">
         Пока ждёте — посмотрите наши готовые объекты

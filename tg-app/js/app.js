@@ -4,43 +4,68 @@
 // =====================================
 // Telegram WebApp
 // =====================================
-// initData пустая строка — значит открыто в браузере, не в Telegram
 const _tgWA = window.Telegram && window.Telegram.WebApp;
 const tgApp = (_tgWA && _tgWA.initData !== '') ? _tgWA : null;
 
 // =====================================
-// Состояние приложения
+// ПОРЯДОК ЭКРАНОВ
+// =====================================
+const SCREEN_ORDER = [
+  'screen-0',       // Старт
+  'screen-region',  // Регион
+  'screen-1',       // Площадь + Этажность
+  'screen-2',       // Фундамент
+  'screen-3',       // Кровля
+  'screen-4',       // Стиль
+  'screen-facade',  // Фасад
+  'screen-5',       // Отделка (включая Вайт бокс)
+  'screen-6',       // Дополнительные опции
+  'screen-7',       // Результат
+  'screen-8',       // Форма контакта
+  'screen-9',       // Спасибо
+];
+
+function screenId() { return SCREEN_ORDER[appState.currentStep]; }
+function totalSteps() { return SCREEN_ORDER.length; }
+
+// =====================================
+// СОСТОЯНИЕ ПРИЛОЖЕНИЯ
 // =====================================
 let appState = {
+  region:       null,   // 'kaluga' | 'obninsk' | 'moscow_obl' | 'new_moscow'
   area:         120,
   floors:       null,   // 'single' | 'mansard' | 'double'
   foundation:   null,   // 'pile' | 'strip' | 'slab' | 'ushp'
   roofMaterial: null,   // 'metalTile' | 'softRoofing' | 'standingSeam'
   roofShape:    null,   // 'gable' | 'hip' | 'flat'
   style:        null,   // 'classic' | 'hitech' | 'chalet'
-  finishing:    null,   // 'shell' | 'rough' | 'turnkeyEco' | 'turnkeyStd'
-  options:      [],     // Array
+  facade:       null,   // 'plaster' | 'brick' | 'panel' | 'none'
+  finishing:    null,   // 'shell' | 'rough' | 'whitebox' | 'turnkeyEco' | 'turnkeyStd'
+  options:      [],
   currentStep:  0,
 };
 
-// Текст MainButton для каждого шага
+// Текст MainButton для каждого экрана
 const BTN_TEXTS = {
-  0: '✦ Начать расчёт',
-  1: 'Далее →',
-  2: 'Далее →',
-  3: 'Далее →',
-  4: 'Далее →',
-  5: 'Далее →',
-  6: '⚡ Рассчитать',
-  7: 'Узнать точную стоимость',
-  8: 'Отправить заявку',
-  9: 'Смотреть проекты',
+  'screen-0':      '✦ Начать расчёт',
+  'screen-region': 'Далее →',
+  'screen-1':      'Далее →',
+  'screen-2':      'Далее →',
+  'screen-3':      'Далее →',
+  'screen-4':      'Далее →',
+  'screen-facade': 'Далее →',
+  'screen-5':      'Далее →',
+  'screen-6':      '⚡ Рассчитать',
+  'screen-7':      'Узнать точную стоимость',
+  'screen-8':      'Отправить заявку',
+  'screen-9':      'Смотреть проекты',
 };
 
 // =====================================
 // ИНИЦИАЛИЗАЦИЯ
 // =====================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadPricesFromApi();
   initTelegramApp();
   applyTelegramTheme();
   applyGreeting();
@@ -49,24 +74,31 @@ document.addEventListener('DOMContentLoaded', () => {
   initOffer();
 });
 
+async function loadPricesFromApi() {
+  try {
+    const resp = await fetch('/api/prices');
+    if (!resp.ok) return;
+    const json = await resp.json();
+    if (json.ok && json.prices) {
+      Object.assign(PRICES, json.prices);
+    }
+  } catch (e) {
+    // Используем fallback из prices.js
+  }
+}
+
 function initTelegramApp() {
   if (tgApp) {
     tgApp.ready();
     tgApp.expand();
-
-    // Подписки на нативные кнопки
     tgApp.BackButton.onClick(() => navigateBack());
     tgApp.MainButton.onClick(() => handleMainButton());
-
-    // Показываем MainButton
-    tgApp.MainButton.setText(BTN_TEXTS[0]);
+    tgApp.MainButton.setText(BTN_TEXTS['screen-0']);
     tgApp.MainButton.show();
   } else {
-    // Режим браузера — показываем кнопку-заглушку
     const btn = document.getElementById('browser-main-btn');
     btn.style.display = 'flex';
     btn.addEventListener('click', handleMainButton);
-    // Отступ снизу чтобы контент не перекрывался кнопкой
     document.getElementById('app').style.paddingBottom = '54px';
   }
 }
@@ -82,27 +114,21 @@ function applyGreeting() {
 
 function applyTelegramTheme() {
   if (!tgApp || !tgApp.themeParams) return;
-
   const theme = tgApp.themeParams;
-  const root = document.documentElement;
-
+  const root  = document.documentElement;
   const map = {
-    bg_color:            '--tg-bg',
-    text_color:          '--tg-text',
-    hint_color:          '--tg-hint',
-    link_color:          '--tg-link',
-    button_color:        '--tg-btn',
-    button_text_color:   '--tg-btn-text',
-    secondary_bg_color:  '--tg-secondary',
+    bg_color:           '--tg-bg',
+    text_color:         '--tg-text',
+    hint_color:         '--tg-hint',
+    link_color:         '--tg-link',
+    button_color:       '--tg-btn',
+    button_text_color:  '--tg-btn-text',
+    secondary_bg_color: '--tg-secondary',
   };
-
   Object.entries(map).forEach(([key, cssVar]) => {
     if (theme[key]) root.style.setProperty(cssVar, theme[key]);
   });
-
-  if (tgApp.colorScheme === 'dark') {
-    document.body.classList.add('dark-theme');
-  }
+  if (tgApp.colorScheme === 'dark') document.body.classList.add('dark-theme');
 }
 
 // =====================================
@@ -110,32 +136,27 @@ function applyTelegramTheme() {
 // =====================================
 let isAnimating = false;
 
-function navigateTo(step, direction) {
+function navigateTo(stepIndex, direction) {
   if (isAnimating) return;
 
   const current = document.querySelector('.screen.active');
-  const next = document.getElementById('screen-' + step);
+  const next    = document.getElementById(SCREEN_ORDER[stepIndex]);
   if (!next) return;
 
   isAnimating = true;
-  appState.currentStep = step;
+  appState.currentStep = stepIndex;
 
   const exitTranslate = direction === 'forward' ? 'translateX(-28px)' : 'translateX(28px)';
-  const enterStart   = direction === 'forward' ? 'translateX(40px)'  : 'translateX(-40px)';
+  const enterStart    = direction === 'forward' ? 'translateX(40px)'  : 'translateX(-40px)';
 
-  // Выход текущего
   if (current && current !== next) {
     current.style.transition = 'transform 0.26s ease, opacity 0.20s ease';
     current.style.transform  = exitTranslate;
     current.style.opacity    = '0';
     current.style.pointerEvents = 'none';
-    setTimeout(() => {
-      current.classList.remove('active');
-      current.style.cssText = '';
-    }, 260);
+    setTimeout(() => { current.classList.remove('active'); current.style.cssText = ''; }, 260);
   }
 
-  // Вход нового
   next.style.transition = 'none';
   next.style.transform  = enterStart;
   next.style.opacity    = '0';
@@ -146,27 +167,21 @@ function navigateTo(step, direction) {
       next.style.transform  = 'translateX(0)';
       next.style.opacity    = '1';
       next.classList.add('active');
-
-      setTimeout(() => {
-        next.style.cssText = '';
-        isAnimating = false;
-      }, 300);
+      setTimeout(() => { next.style.cssText = ''; isAnimating = false; }, 300);
     });
   });
 
   updateMainButtonState();
   updateBackButton();
-  onScreenEnter(step);
+  onScreenEnter(stepIndex);
 }
 
 function navigateForward() {
   const step = appState.currentStep;
+  const sid  = screenId();
 
-  // Включаем подтверждение закрытия после шага 2
-  if (step === 2 && tgApp) tgApp.enableClosingConfirmation();
-
-  // Рендер результата перед переходом на экран 7
-  if (step === 6) renderResult();
+  if (sid === 'screen-2' && tgApp) tgApp.enableClosingConfirmation();
+  if (sid === 'screen-6') renderResult();
 
   navigateTo(step + 1, 'forward');
 }
@@ -181,68 +196,76 @@ function navigateBack() {
 // ГЛАВНАЯ КНОПКА
 // =====================================
 function handleMainButton() {
-  const step = appState.currentStep;
+  const sid = screenId();
 
-  switch (step) {
-    case 0: navigateForward(); break;
+  switch (sid) {
+    case 'screen-0': navigateForward(); break;
 
-    case 1:
+    case 'screen-region':
+      if (!appState.region) { flashButton(); return; }
+      navigateForward(); break;
+
+    case 'screen-1':
       if (!appState.floors) { flashButton(); return; }
       navigateForward(); break;
 
-    case 2:
+    case 'screen-2':
       if (!appState.foundation) { flashButton(); return; }
       navigateForward(); break;
 
-    case 3:
+    case 'screen-3':
       if (!appState.roofMaterial || !appState.roofShape) { flashButton(); return; }
       navigateForward(); break;
 
-    case 4:
+    case 'screen-4':
       if (!appState.style) { flashButton(); return; }
       navigateForward(); break;
 
-    case 5:
+    case 'screen-facade':
+      if (!appState.facade) { flashButton(); return; }
+      navigateForward(); break;
+
+    case 'screen-5':
       if (!appState.finishing) { flashButton(); return; }
       navigateForward(); break;
 
-    case 6: navigateForward(); break;
+    case 'screen-6': navigateForward(); break;
+    case 'screen-7': navigateForward(); break;
 
-    case 7: navigateForward(); break;
+    case 'screen-8': submitLead(); break;
 
-    case 8: submitLead(); break;
-
-    case 9:
+    case 'screen-9':
       if (tgApp) tgApp.openTelegramLink('https://t.me/yourchannel');
       break;
   }
 }
 
 function updateMainButtonState() {
-  const step = appState.currentStep;
-  const text = BTN_TEXTS[step] || 'Далее';
+  const sid = screenId();
+  const text = BTN_TEXTS[sid] || 'Далее';
 
-  // Определяем активность
   const activeMap = {
-    0: true,
-    1: !!appState.floors,
-    2: !!appState.foundation,
-    3: !!(appState.roofMaterial && appState.roofShape),
-    4: !!appState.style,
-    5: !!appState.finishing,
-    6: true,
-    7: true,
-    8: canSubmitForm(),
-    9: true,
+    'screen-0':      true,
+    'screen-region': !!appState.region,
+    'screen-1':      !!appState.floors,
+    'screen-2':      !!appState.foundation,
+    'screen-3':      !!(appState.roofMaterial && appState.roofShape),
+    'screen-4':      !!appState.style,
+    'screen-facade': !!appState.facade,
+    'screen-5':      !!appState.finishing,
+    'screen-6':      true,
+    'screen-7':      true,
+    'screen-8':      canSubmitForm(),
+    'screen-9':      true,
   };
-  const isActive = activeMap[step] !== undefined ? activeMap[step] : true;
+  const isActive = activeMap[sid] !== undefined ? activeMap[sid] : true;
 
   if (tgApp) {
     tgApp.MainButton.setText(text);
     isActive ? tgApp.MainButton.enable() : tgApp.MainButton.disable();
     tgApp.MainButton.show();
   } else {
-    const btn = document.getElementById('browser-main-btn');
+    const btn  = document.getElementById('browser-main-btn');
     const span = document.getElementById('browser-btn-text');
     if (btn && span) {
       span.textContent = text;
@@ -254,13 +277,11 @@ function updateMainButtonState() {
 function updateBackButton() {
   if (!tgApp) return;
   const step = appState.currentStep;
-  (step > 0 && step < 9) ? tgApp.BackButton.show() : tgApp.BackButton.hide();
+  (step > 0 && step < totalSteps() - 1) ? tgApp.BackButton.show() : tgApp.BackButton.hide();
 }
 
-// Короткая вибрация + мигание кнопки при недопустимом тапе
 function flashButton() {
   if (tgApp && tgApp.HapticFeedback) tgApp.HapticFeedback.notificationOccurred('error');
-
   const btn = document.getElementById('browser-main-btn');
   if (!btn) return;
   btn.style.opacity = '0.5';
@@ -270,29 +291,29 @@ function flashButton() {
 // =====================================
 // СОБЫТИЯ ПРИ ВХОДЕ НА ЭКРАН
 // =====================================
-function onScreenEnter(step) {
-  switch (step) {
-    case 3:
-      updatePricePreview();
-      break;
-    case 6:
-      updateOptionsTotal();
-      break;
-    case 7:
-      // Результат уже отрендерен в navigateForward()
-      break;
-    case 8:
-      setupContactForm();
-      break;
+function onScreenEnter(stepIndex) {
+  const sid = SCREEN_ORDER[stepIndex];
+  switch (sid) {
+    case 'screen-3':  updatePricePreview(); break;
+    case 'screen-6':  updateOptionsTotal(); break;
+    case 'screen-8':  setupContactForm(); break;
   }
+}
+
+// =====================================
+// ЭКРАН РЕГИОНА
+// =====================================
+function setupRegionCards() {
+  setupCardGroup('step-region-cards', 'region', () => {
+    updateMainButtonState();
+  });
 }
 
 // =====================================
 // ШАГ 1: ПЛОЩАДЬ + ЭТАЖНОСТЬ
 // =====================================
 function setupSlider() {
-  const slider  = document.getElementById('area-slider');
-  const display = document.getElementById('area-display');
+  const slider = document.getElementById('area-slider');
   if (!slider) return;
 
   slider.addEventListener('input', (e) => {
@@ -336,16 +357,10 @@ function setupCardGroup(containerId, stateKey, onSelect) {
     const value = card.dataset.value;
     appState[stateKey] = value;
 
-    // Снимаем выделение
-    container.querySelectorAll('.select-card').forEach(c => {
-      c.classList.remove('selected', 'just-selected');
-    });
-
-    // Выделяем выбранную
+    container.querySelectorAll('.select-card').forEach(c => c.classList.remove('selected', 'just-selected'));
     card.classList.add('selected', 'just-selected');
     setTimeout(() => card.classList.remove('just-selected'), 250);
 
-    // Haptic feedback
     if (tgApp && tgApp.HapticFeedback) tgApp.HapticFeedback.selectionChanged();
 
     updateMainButtonState();
@@ -364,9 +379,7 @@ function setupStyleCards() {
     const value = card.dataset.value;
     appState.style = value;
 
-    container.querySelectorAll('.style-card').forEach(c => {
-      c.classList.remove('selected', 'just-selected');
-    });
+    container.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected', 'just-selected'));
     card.classList.add('selected', 'just-selected');
     setTimeout(() => card.classList.remove('just-selected'), 250);
 
@@ -382,7 +395,8 @@ function setupStyleCards() {
 // ШАГ 3: ПРЕВЬЮ ЦЕНЫ
 // =====================================
 function updatePricePreview() {
-  if (appState.currentStep < 3) return;
+  // Превью доступно начиная с экрана кровли (index 4)
+  if (appState.currentStep < 4) return;
   const preview  = document.getElementById('price-preview');
   const amountEl = document.getElementById('preview-amount');
   if (!preview || !amountEl) return;
@@ -414,9 +428,7 @@ function setupOptionCards() {
       }
 
       setTimeout(() => card.classList.remove('just-selected'), 250);
-
       if (tgApp && tgApp.HapticFeedback) tgApp.HapticFeedback.selectionChanged();
-
       updateOptionsTotal();
     });
   });
@@ -425,7 +437,6 @@ function setupOptionCards() {
 function updateOptionsTotal() {
   const el = document.getElementById('options-total');
   if (!el) return;
-
   const result = calculate(appState);
   el.textContent = result ? formatPrice(result.total) : '—';
 }
@@ -437,27 +448,20 @@ function renderResult() {
   const result = calculate(appState);
   if (!result) return;
 
-  const floorLabels = { single: '1 этаж', mansard: '1,5 этажа', double: '2 этажа' };
-  const styleLabels = { classic: 'Классика', hitech: 'Хай-тек', chalet: 'Шале' };
-  const finLabels   = {
-    shell: 'Коробка', rough: 'Черновая отделка',
-    turnkeyEco: 'Под ключ Эконом', turnkeyStd: 'Под ключ Стандарт',
-  };
-  const foundLabels = {
-    pile: 'свайный', strip: 'ленточный', slab: 'монолит', ushp: 'УШП',
-  };
-  const roofLabels  = {
-    metalTile: 'металлочерепица', softRoofing: 'мягкая черепица', standingSeam: 'фальцевая',
-  };
-  const optLabels   = { terrace: 'Терраса', garage: 'Гараж', bathhouse: 'Баня' };
+  const floorLabels  = { single: '1 этаж', mansard: '1,5 этажа', double: '2 этажа' };
+  const styleLabels  = { classic: 'Классика', hitech: 'Хай-тек', chalet: 'Шале' };
+  const finLabels    = { shell: 'Коробка', rough: 'Черновая отделка', whitebox: 'Вайт бокс', turnkeyEco: 'Под ключ Эконом', turnkeyStd: 'Под ключ Стандарт' };
+  const foundLabels  = { pile: 'свайный', strip: 'ленточный', slab: 'монолит', ushp: 'УШП' };
+  const roofLabels   = { metalTile: 'металлочерепица', softRoofing: 'мягкая черепица', standingSeam: 'фальцевая' };
+  const facadeLabels = { plaster: 'штукатурка', brick: 'кирпич', panel: 'панель', none: 'без фасада' };
+  const regionLabels = { kaluga: 'Калужская обл.', obninsk: 'Обнинск', moscow_obl: 'МО', new_moscow: 'Новая Москва' };
+  const optLabels    = { terrace: 'Терраса', garage: 'Гараж', bathhouse: 'Баня' };
 
-  // Шапка
   document.getElementById('result-title').textContent =
     `🏠 ${appState.area} м² · ${floorLabels[appState.floors]}`;
   document.getElementById('result-subtitle').textContent =
-    `Газобетон · ${styleLabels[appState.style] || ''}`;
+    `Газобетон · ${styleLabels[appState.style] || ''} · ${regionLabels[appState.region] || ''}`;
 
-  // Строки разбивки
   const rows = [
     { label: `Фундамент (${foundLabels[appState.foundation]})`, amount: result.breakdown.foundation },
     { label: 'Коробка из газобетона',                           amount: result.breakdown.box },
@@ -468,14 +472,19 @@ function renderResult() {
     const pct = appState.style === 'hitech' ? 10 : 18;
     rows.push({ label: `Надбавка за стиль (+${pct}%)`, amount: result.breakdown.style });
   }
-
+  if (result.breakdown.facade > 0) {
+    rows.push({ label: `Фасад (${facadeLabels[appState.facade]})`, amount: result.breakdown.facade });
+  }
   if (result.breakdown.finishing > 0) {
     rows.push({ label: finLabels[appState.finishing], amount: result.breakdown.finishing });
   }
-
   if (result.breakdown.options > 0) {
     const names = appState.options.map(o => optLabels[o]).join(', ');
     rows.push({ label: names, amount: result.breakdown.options });
+  }
+  if (result.breakdown.region > 0) {
+    const coeff = PRICES.region[appState.region];
+    rows.push({ label: `Региональная надбавка (+${Math.round((coeff - 1) * 100)}%)`, amount: result.breakdown.region });
   }
 
   document.getElementById('result-breakdown').innerHTML = rows
@@ -486,7 +495,6 @@ function renderResult() {
       </div>`)
     .join('');
 
-  // Итог
   document.getElementById('result-total').textContent    = '≈ ' + formatPrice(result.total);
   document.getElementById('result-per-sqm').textContent  = formatPrice(result.perSqm) + '/м²';
   document.getElementById('result-mortgage').textContent = 'от ' + formatPrice(result.mortgage) + '/мес';
@@ -504,19 +512,16 @@ function setupContactForm() {
 
   if (!nameInput) return;
 
-  // Предзаполнение имени из Telegram
   if (tgApp && tgApp.initDataUnsafe && tgApp.initDataUnsafe.user) {
     const u = tgApp.initDataUnsafe.user;
     if (u.first_name) nameInput.value = u.first_name;
   }
 
-  // Сумма расчёта в шапке
   const result = calculate(appState);
   if (result) {
     document.getElementById('form-total').textContent = '≈ ' + formatPrice(result.total);
   }
 
-  // Маска телефона
   phoneInput.addEventListener('input', (e) => {
     let raw = e.target.value.replace(/\D/g, '');
     if (raw.startsWith('8')) raw = '7' + raw.slice(1);
@@ -534,11 +539,9 @@ function setupContactForm() {
     updateMainButtonState();
   });
 
-  // Обновление кнопки при изменении полей
   nameInput.addEventListener('input',  () => updateMainButtonState());
   phoneInput.addEventListener('input', () => updateMainButtonState());
 
-  // Чекбокс
   consentLabel.addEventListener('click', (e) => {
     e.preventDefault();
     const checked = !consentInput.checked;
@@ -553,7 +556,6 @@ function canSubmitForm() {
   const phone   = document.getElementById('contact-phone');
   const consent = document.getElementById('contact-consent');
   if (!name || !phone || !consent) return false;
-
   const digits = phone.value.replace(/\D/g, '');
   return name.value.trim().length >= 2 && digits.length === 11 && consent.checked;
 }
@@ -561,11 +563,10 @@ function canSubmitForm() {
 async function submitLead() {
   if (!canSubmitForm()) { flashButton(); return; }
 
-  const name  = document.getElementById('contact-name').value.trim();
-  const phone = document.getElementById('contact-phone').value;
+  const name   = document.getElementById('contact-name').value.trim();
+  const phone  = document.getElementById('contact-phone').value;
   const result = calculate(appState);
 
-  // Показываем лоадер
   if (tgApp) {
     tgApp.MainButton.showProgress(false);
     tgApp.MainButton.disable();
@@ -581,20 +582,24 @@ async function submitLead() {
       body:    JSON.stringify({
         name,
         phone,
+        region:       appState.region,
         area:         appState.area,
         floors:       appState.floors,
         foundation:   appState.foundation,
         roofMaterial: appState.roofMaterial,
         roofShape:    appState.roofShape,
         style:        appState.style,
+        facade:       appState.facade,
         finishing:    appState.finishing,
         options:      appState.options,
-        total:        result ? result.total : 0,
+        total:        result ? result.total    : 0,
+        perSqm:       result ? result.perSqm   : 0,
+        mortgage:     result ? result.mortgage : 0,
+        breakdown:    result ? result.breakdown : {},
         tgUser:       tgApp ? (tgApp.initDataUnsafe && tgApp.initDataUnsafe.user) : null,
       }),
     });
 
-    // Сброс лоадера
     if (tgApp) { tgApp.MainButton.hideProgress(); }
     else {
       const btn = document.getElementById('browser-main-btn');
@@ -602,8 +607,19 @@ async function submitLead() {
     }
 
     if (resp.ok) {
+      const json = await resp.json();
       if (tgApp && tgApp.HapticFeedback) tgApp.HapticFeedback.notificationOccurred('success');
-      navigateTo(9, 'forward');
+
+      // Показываем кнопку скачивания PDF если есть ссылка
+      if (json.pdfUrl) {
+        const pdfBtn = document.getElementById('pdf-download-btn');
+        if (pdfBtn) {
+          pdfBtn.href = json.pdfUrl;
+          pdfBtn.style.display = 'flex';
+        }
+      }
+
+      navigateTo(SCREEN_ORDER.indexOf('screen-9'), 'forward');
     } else {
       showFormError('Ошибка отправки. Попробуйте ещё раз.');
       if (tgApp) tgApp.MainButton.enable();
@@ -633,7 +649,7 @@ function showFormError(msg) {
 function shareResult() {
   const result = calculate(appState);
   const botUrl = 'https://t.me/Kalkulator_stroy_bot/app';
-  const text = result
+  const text   = result
     ? `🏠 Посчитал дом из газобетона ${appState.area} м² — вышло ≈ ${formatPrice(result.total)}. Рассчитай свой за 2 минуты:`
     : '🏠 Рассчитай стоимость своего дома из газобетона за 2 минуты:';
 
@@ -651,10 +667,8 @@ function shareResult() {
 // ИНИЦИАЛИЗАЦИЯ ВСЕХ СЛУШАТЕЛЕЙ
 // =====================================
 function setupAllListeners() {
-  // Слайдер
   setupSlider();
 
-  // Чипы быстрого выбора площади
   document.querySelectorAll('.area-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       const value = parseInt(chip.dataset.value);
@@ -670,6 +684,9 @@ function setupAllListeners() {
     });
   });
 
+  // Регион
+  setupRegionCards();
+
   // Шаг 1: этажность
   setupCardGroup('step1-floors', 'floors', () => {
     updateMainButtonState();
@@ -677,17 +694,13 @@ function setupAllListeners() {
   });
 
   // Шаг 2: фундамент
-  setupCardGroup('step2-cards', 'foundation', () => {
-    updateMainButtonState();
-  });
+  setupCardGroup('step2-cards', 'foundation', () => updateMainButtonState());
 
-  // Шаг 3: кровля (материал)
+  // Шаг 3: кровля
   setupCardGroup('step3-material', 'roofMaterial', () => {
     updateMainButtonState();
     updatePricePreview();
   });
-
-  // Шаг 3: кровля (форма)
   setupCardGroup('step3-shape', 'roofShape', () => {
     updateMainButtonState();
     updatePricePreview();
@@ -695,6 +708,9 @@ function setupAllListeners() {
 
   // Шаг 4: стиль
   setupStyleCards();
+
+  // Фасад
+  setupCardGroup('step-facade-cards', 'facade', () => updateMainButtonState());
 
   // Шаг 5: отделка
   setupCardGroup('step5-cards', 'finishing', () => {
@@ -713,14 +729,12 @@ function setupAllListeners() {
   const recalcBtn = document.getElementById('recalc-btn');
   if (recalcBtn) {
     recalcBtn.addEventListener('click', () => {
-      // Сброс состояния
       appState = {
-        area: 120, floors: null, foundation: null,
+        region: null, area: 120, floors: null, foundation: null,
         roofMaterial: null, roofShape: null, style: null,
-        finishing: null, options: [], currentStep: 0,
+        facade: null, finishing: null, options: [], currentStep: 0,
       };
 
-      // Сброс UI-выделений
       document.querySelectorAll('.select-card.selected').forEach(c => c.classList.remove('selected'));
       document.querySelectorAll('.style-card.selected').forEach(c => c.classList.remove('selected'));
       document.querySelectorAll('.option-card.checked').forEach(c => {
@@ -739,7 +753,7 @@ function setupAllListeners() {
 
       document.querySelector('.area-chip[data-value="120"]')?.classList.add('active');
 
-      navigateTo(1, 'forward');
+      navigateTo(SCREEN_ORDER.indexOf('screen-region'), 'forward');
     });
   }
 }
@@ -751,16 +765,12 @@ function initOffer() {
   const overlay = document.getElementById('offer-overlay');
   if (!overlay) return;
 
-  // Если уже видел — не показываем
   if (localStorage.getItem('offer_shown')) {
     overlay.classList.add('hidden');
     return;
   }
 
-  // Небольшая задержка чтобы приложение успело отрисоваться
-  setTimeout(() => {
-    overlay.classList.remove('hidden');
-  }, 600);
+  setTimeout(() => overlay.classList.remove('hidden'), 600);
 
   function closeOffer() {
     localStorage.setItem('offer_shown', '1');
@@ -769,14 +779,7 @@ function initOffer() {
     setTimeout(() => overlay.classList.add('hidden'), 220);
   }
 
-  // Кнопка «Пропустить»
   document.getElementById('offer-skip').addEventListener('click', closeOffer);
-
-  // Кнопка CTA — закрываем после перехода по ссылке
   document.getElementById('offer-cta').addEventListener('click', closeOffer);
-
-  // Тап по фону (вне карточки) — закрываем
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) closeOffer();
-  });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOffer(); });
 }

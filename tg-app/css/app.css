@@ -1370,3 +1370,42 @@ input#contact-consent {
 .offer-skip:active {
   color: var(--tg-text);
 }
+
+/* ========================================
+   НОВЫЕ ЭЛЕМЕНТЫ: фасад, регион, PDF
+   ======================================== */
+
+/* Цена на карточке фасада */
+.card-price {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tg-hint);
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+/* Кнопка скачивания PDF на экране «Спасибо» */
+.pdf-download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 16px auto 0;
+  padding: 14px 24px;
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1.5px solid var(--accent-border);
+  border-radius: 14px;
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.18s ease, transform 0.15s ease;
+  max-width: 280px;
+}
+
+.pdf-download-btn:active {
+  background: var(--accent-medium);
+  transform: scale(0.97);
+}
