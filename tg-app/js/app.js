@@ -575,7 +575,7 @@ async function submitLead() {
   }
 
   try {
-    const resp = await fetch('/.netlify/functions/lead', {
+    const resp = await fetch('/api/lead', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({

@@ -1,7 +1,7 @@
 # CLAUDE.md — Навигация по проекту
 
 Telegram Mini App — калькулятор стоимости строительства дома из газобетона.
-Стек: чистый HTML + CSS + JS, хостинг Netlify, бэкенд — Netlify Functions.
+Стек: чистый HTML + CSS + JS, хостинг Vercel, бэкенд — Vercel Serverless Functions.
 
 ---
 
@@ -9,7 +9,7 @@ Telegram Mini App — калькулятор стоимости строител
 
 ```
 tg-stroyka/
-├── tg-app/                          ← публичная папка (publish dir для Netlify)
+├── tg-app/                          ← публичная папка (outputDirectory для Vercel)
 │   ├── index.html                   ← единственная HTML-страница, все 10 экранов
 │   ├── css/
 │   │   └── app.css                  ← все стили (тема Telegram, карточки, анимации)
@@ -18,11 +18,10 @@ tg-stroyka/
 │       ├── calculator.js            ← логика расчёта, форматирование
 │       └── app.js                   ← навигация, Telegram SDK, обработчики событий
 │
-├── netlify/
-│   └── functions/
-│       └── lead.js                  ← серверная функция: принимает лид → отправляет в Telegram
+├── api/
+│   └── lead.js                      ← серверная функция: принимает лид → отправляет в Telegram
 │
-├── netlify.toml                     ← конфиг сборки Netlify (publish = "tg-app")
+├── vercel.json                      ← конфиг деплоя Vercel (outputDirectory = "tg-app")
 │
 ├── brief.md                         ← план разработки с ASCII-мокапами экранов
 ├── specs/                           ← спецификация продукта
@@ -57,7 +56,7 @@ tg-stroyka/
 Файл: [tg-app/js/prices.js](tg-app/js/prices.js)
 
 Структура: объект `PRICES` с ключами `boxPerSqm`, `foundation`, `roofMaterial`, `roofShape`, `style`, `finishing`, `options`.
-После изменения — `git commit + push`, Netlify автоматически задеплоит.
+После изменения — `git commit + push`, Vercel автоматически задеплоит.
 
 ### Тексты на экранах
 Файл: [tg-app/index.html](tg-app/index.html)
@@ -98,14 +97,14 @@ SDK подключён через:
 
 **Путь данных:**
 ```
-Форма (screen-8) → POST /.netlify/functions/lead → Netlify Function → Telegram Bot API → чат менеджера
+Форма (screen-8) → POST /api/lead → Vercel Function → Telegram Bot API → чат менеджера
 ```
 
-**Переменные окружения** (задать в Netlify Dashboard):
+**Переменные окружения** (задать в Vercel Dashboard → Settings → Environment Variables):
 - `TELEGRAM_BOT_TOKEN` — токен из BotFather
 - `TELEGRAM_CHAT_ID` — chat_id менеджера (узнать через @userinfobot)
 
-**Функция:** [netlify/functions/lead.js](netlify/functions/lead.js)
+**Функция:** [api/lead.js](api/lead.js)
 
 ---
 
@@ -126,8 +125,8 @@ CSS-переменные темы Telegram → [tg-app/css/app.css](tg-app/css/a
 
 - [ ] Заменить цены в `prices.js` на реальные цены компании
 - [ ] Заменить `https://t.me/yourchannel` в `app.js` на реальный канал
-- [ ] Задать `TELEGRAM_BOT_TOKEN` и `TELEGRAM_CHAT_ID` в Netlify
-- [ ] Подключить Netlify к GitHub репозиторию
-- [ ] В BotFather: `/setmenubutton` → вставить Netlify URL
+- [ ] Задать `TELEGRAM_BOT_TOKEN` и `TELEGRAM_CHAT_ID` в Vercel Dashboard
+- [ ] Подключить Vercel к GitHub репозиторию
+- [ ] В BotFather: `/setmenubutton` → вставить Vercel URL
 - [ ] Протестировать на реальном телефоне в Telegram
 - [ ] Проверить работу лидов (отправить тестовую заявку)

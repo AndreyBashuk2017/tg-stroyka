@@ -1,12 +1,11 @@
-// lead.js — Netlify Function. Принимает данные лида и отправляет уведомление в Telegram.
-// URL: POST /.netlify/functions/lead
-// Env vars (задать в Netlify Dashboard → Site configuration → Environment variables):
+// api/lead.js — Vercel Serverless Function
+// URL: POST /api/lead
+// Env vars (задать в Vercel Dashboard → Settings → Environment Variables):
 //   TELEGRAM_BOT_TOKEN  — токен бота из BotFather
 //   TELEGRAM_CHAT_ID    — chat_id менеджера (узнать через @userinfobot)
 
 const https = require('https');
 
-// Русские метки для параметров
 const LABELS = {
   floors: {
     single: '1 этаж', mansard: '1,5 этажа (мансарда)', double: '2 этажа',
@@ -41,7 +40,6 @@ function buildMessage(data) {
     roofMaterial, roofShape, style, finishing, options, total, tgUser,
   } = data;
 
-  // Дата и время по Москве
   const now = new Date();
   const moscowTime = new Intl.DateTimeFormat('ru-RU', {
     timeZone: 'Europe/Moscow',
@@ -117,22 +115,17 @@ function sendTelegramMessage(token, chatId, text) {
   });
 }
 
-exports.handler = async (event) => {
-  // CORS preflight
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin':  '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-      body: '',
-    };
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
 
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -140,41 +133,21 @@ exports.handler = async (event) => {
 
   if (!BOT_TOKEN || !CHAT_ID) {
     console.error('Missing env vars: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID');
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ ok: false, error: 'Server not configured' }),
-    };
+    return res.status(500).json({ ok: false, error: 'Server not configured' });
   }
 
-  let data;
-  try {
-    data = JSON.parse(event.body || '{}');
-  } catch (e) {
-    return { statusCode: 400, body: JSON.stringify({ ok: false, error: 'Invalid JSON' }) };
-  }
+  const data = req.body;
 
-  // Валидация обязательных полей
-  if (!data.name || !data.phone) {
-    return { statusCode: 400, body: JSON.stringify({ ok: false, error: 'name and phone are required' }) };
+  if (!data || !data.name || !data.phone) {
+    return res.status(400).json({ ok: false, error: 'name and phone are required' });
   }
 
   try {
     const message = buildMessage(data);
     await sendTelegramMessage(BOT_TOKEN, CHAT_ID, message);
-
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type':                'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-      body: JSON.stringify({ ok: true }),
-    };
+    return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('Failed to send Telegram message:', err.message);
-    return {
-      statusCode: 502,
-      body: JSON.stringify({ ok: false, error: 'Failed to send notification' }),
-    };
+    return res.status(502).json({ ok: false, error: 'Failed to send notification' });
   }
 };

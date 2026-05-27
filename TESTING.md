@@ -1,7 +1,7 @@
 # TESTING.md — Руководство для тестировщика
 
 Telegram Mini App — калькулятор стоимости строительства дома из газобетона.  
-Стек: HTML + CSS + JS (без фреймворков), хостинг Netlify, бэкенд — Netlify Functions.
+Стек: HTML + CSS + JS (без фреймворков), хостинг Vercel, бэкенд — Vercel Serverless Functions.
 
 ---
 
@@ -17,8 +17,8 @@ tg-stroyka/
 │       ├── calculator.js     ← функции calculate(), formatPrice() и др.
 │       └── app.js            ← навигация, Telegram SDK, обработчики
 │
-├── netlify/functions/lead.js ← serverless-функция приёма лида
-├── netlify.toml              ← publish = "tg-app", functions = "netlify/functions"
+├── api/lead.js               ← serverless-функция приёма лида (Vercel)
+├── vercel.json               ← outputDirectory = "tg-app", SPA rewrite
 └── .env                      ← TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID (не в git)
 ```
 
@@ -27,8 +27,8 @@ tg-stroyka/
 ## 2. Запуск локально
 
 ### Требования
-- Node.js ≥ 18 (нужен только для Netlify CLI)
-- [Netlify CLI](https://docs.netlify.com/cli/get-started/): `npm install -g netlify-cli`
+- Node.js ≥ 18
+- [Vercel CLI](https://vercel.com/docs/cli): `npm install -g vercel`
 
 ### Шаги
 
@@ -42,13 +42,13 @@ cp .env.example .env
 # Заполнить TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID в .env
 
 # 3. Запустить локальный сервер с поддержкой функций
-netlify dev
-# → откроется http://localhost:8888
+vercel dev
+# → откроется http://localhost:3000
 ```
 
-> **Без Netlify CLI:** открыть `tg-app/index.html` напрямую в браузере.  
+> **Без Vercel CLI:** открыть `tg-app/index.html` напрямую в браузере.  
 > Приложение работает в браузере — вместо Telegram MainButton внизу появится синяя кнопка-заглушка.  
-> Отправка лида (`/.netlify/functions/lead`) в этом режиме не работает без сервера.
+> Отправка лида (`/api/lead`) в этом режиме не работает без сервера.
 
 ---
 
@@ -56,8 +56,8 @@ netlify dev
 
 | Среда | URL | Что проверять |
 |-------|-----|---------------|
-| Локальная (браузер) | `http://localhost:8888` | Все экраны, навигация, калькулятор |
-| Netlify/Vercel preview | URL деплоя | Те же + отправка лида |
+| Локальная (браузер) | `http://localhost:3000` | Все экраны, навигация, калькулятор |
+| Vercel preview | URL деплоя | Те же + отправка лида |
 | Telegram Mini App | `https://t.me/Kalkulator_stroy_bot` → кнопка «Открыть» | Полный флоу, нативные кнопки TG |
 
 > В браузере Telegram SDK загружается, но `initData` будет пустой строкой — приложение корректно переключается в браузерный режим (строка 8–9 `app.js`).
@@ -188,7 +188,7 @@ netlify dev
 | 8.7 | Ввести телефон < 11 цифр | Кнопка неактивна |
 | 8.8 | Не поставить галочку согласия | Кнопка неактивна |
 | 8.9 | Заполнить всё корректно | Кнопка «Отправить заявку» становится активной |
-| 8.10 | Нажать «Отправить заявку» | Отправляется POST на `/.netlify/functions/lead`, переход на `screen-9` |
+| 8.10 | Нажать «Отправить заявку» | Отправляется POST на `/api/lead`, переход на `screen-9` |
 | 8.11 | Отправка при `TELEGRAM_CHAT_ID` не задан | Ответ 500 + сообщение «Ошибка отправки. Попробуйте ещё раз.» под формой (скрывается через 5 с) |
 
 ---
@@ -259,13 +259,13 @@ total      = 6 021 600 + 1 083 888 + 3 300 000 + 620 000 = 11 025 488 ₽
 
 ## 6. Тестирование серверной функции (лид)
 
-Функция: `netlify/functions/lead.js`  
-URL: `POST /.netlify/functions/lead`
+Функция: `api/lead.js`  
+URL: `POST /api/lead`
 
-### Тест через curl (требует запущенного `netlify dev`)
+### Тест через curl (требует запущенного `vercel dev`)
 
 ```bash
-curl -X POST http://localhost:8888/.netlify/functions/lead \
+curl -X POST http://localhost:3000/api/lead \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Иван",
@@ -357,7 +357,7 @@ curl -X POST http://localhost:8888/.netlify/functions/lead \
 | # | Проблема | Статус |
 |---|----------|--------|
 | K.1 | Экран 9: кнопка «Смотреть проекты» ведёт на `https://t.me/yourchannel` — заглушка | Требует замены на реальный канал в `app.js:216` |
-| K.2 | `TELEGRAM_CHAT_ID` в `.env` пустой — лиды не доходят до менеджера | Нужно получить ID через `@userinfobot` и задать в Netlify Dashboard |
+| K.2 | `TELEGRAM_CHAT_ID` в `.env` пустой — лиды не доходят до менеджера | Нужно получить ID через `@userinfobot` и задать в Vercel Dashboard |
 | K.3 | Команда `/start` в боте не отвечает текстом | Ожидаемо: это Mini App бот, не чат-бот. Без webhook-сервера команды не обрабатываются |
 | K.4 | Кнопка «Поделиться» в браузере вызывает `navigator.share()` — не работает в Chrome Desktop | Ожидаемо: Web Share API поддерживается только в мобильных браузерах и Safari |
 
@@ -367,8 +367,8 @@ curl -X POST http://localhost:8888/.netlify/functions/lead \
 
 | Переменная | Где задать | Что содержит |
 |------------|------------|--------------|
-| `TELEGRAM_BOT_TOKEN` | Netlify Dashboard → Site configuration → Environment variables | Токен бота из BotFather |
-| `TELEGRAM_CHAT_ID` | Netlify Dashboard → Site configuration → Environment variables | `chat_id` менеджера — узнать через `@userinfobot` в Telegram |
+| `TELEGRAM_BOT_TOKEN` | Vercel Dashboard → Settings → Environment Variables | Токен бота из BotFather |
+| `TELEGRAM_CHAT_ID` | Vercel Dashboard → Settings → Environment Variables | `chat_id` менеджера — узнать через `@userinfobot` в Telegram |
 
 Для локальной разработки — задать в файле `.env` в корне проекта (файл в `.gitignore`, в git не попадает).
 
